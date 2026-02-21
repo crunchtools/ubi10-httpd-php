@@ -3,6 +3,10 @@ FROM registry.access.redhat.com/ubi10/ubi-init:latest
 LABEL maintainer="fatherlinux <scott.mccarty@crunchtools.com>"
 LABEL description="UBI 10 base image with Apache httpd, MariaDB, and PHP 8.3 for WordPress hosting"
 
+# Register with RHSM to access full RHEL repos
+RUN subscription-manager register --activationkey=REDACTED_KEY --org=REDACTED_ORG_ID && \
+    subscription-manager attach --auto
+
 # Install packages - PHP 8.3 is default in RHEL 10
 RUN dnf install -y \
     httpd \
@@ -21,6 +25,9 @@ RUN dnf install -y \
     procps-ng \
     diffutils \
     && dnf clean all
+
+# Unregister to avoid leaking entitlements in the image
+RUN subscription-manager unregister
 
 # Enable services
 RUN systemctl enable httpd mariadb
