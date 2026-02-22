@@ -4,7 +4,9 @@ LABEL maintainer="fatherlinux <scott.mccarty@crunchtools.com>"
 LABEL description="UBI 10 base image with Apache httpd, MariaDB, and PHP 8.3 for WordPress hosting"
 
 # Register with RHSM to access full RHEL repos
-RUN subscription-manager register --activationkey=REDACTED_KEY --org=REDACTED_ORG_ID
+ARG RHSM_ACTIVATION_KEY
+ARG RHSM_ORG_ID
+RUN subscription-manager register --activationkey="$RHSM_ACTIVATION_KEY" --org="$RHSM_ORG_ID"
 
 # Install packages - PHP 8.3 is default in RHEL 10
 RUN dnf install -y \
