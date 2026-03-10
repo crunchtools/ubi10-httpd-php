@@ -33,7 +33,7 @@ RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
     && subscription-manager unregister
 
 # Enable services
-RUN systemctl enable httpd mariadb
+RUN systemctl enable httpd mariadb php-fpm
 
 # Disable unnecessary systemd services for container
 RUN systemctl mask systemd-remount-fs.service \
