@@ -1,7 +1,7 @@
 # Specification: Smoke Tests, Service Tests, and Troubleshooting Packages
 
 > **Spec ID:** 001-smoke-tests
-> **Status:** Draft
+> **Status:** Implemented
 > **Version:** 0.1.0
 > **Author:** Scott McCarty
 > **Date:** 2026-03-10
