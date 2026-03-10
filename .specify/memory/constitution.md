@@ -43,7 +43,7 @@ Uses `--mount=type=secret` for subscription-manager registration to access RHEL 
 
 ## Packages Installed
 
-httpd, mariadb-server, mariadb, php, php-mysqlnd, php-json, php-xml, php-mbstring, php-intl, php-gd, php-opcache, php-pecl-apcu, cronie, procps-ng, diffutils, iputils, bind-utils, net-tools, less
+httpd, mariadb-server, mariadb, php, php-mysqlnd, php-xml, php-mbstring, php-intl, php-gd, php-opcache, php-pecl-apcu, cronie, procps-ng, diffutils, iputils, bind-utils, net-tools, less
 
 ## Testing
 

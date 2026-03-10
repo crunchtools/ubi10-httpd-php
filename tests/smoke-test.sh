@@ -41,7 +41,14 @@ echo "=== Functional Tests ==="
 TEST_PHP="/var/www/html/test.php"
 echo '<?php phpinfo(); ?>' > "$TEST_PHP"
 
-RESPONSE=$(curl -sf http://localhost/test.php 2>/dev/null || true)
+RESPONSE=""
+for i in $(seq 1 10); do
+    RESPONSE=$(curl -sf http://localhost/test.php 2>/dev/null || true)
+    if echo "$RESPONSE" | grep -q "PHP Version"; then
+        break
+    fi
+    sleep 1
+done
 if echo "$RESPONSE" | grep -q "PHP Version"; then
     pass "PHP via Apache returns phpinfo"
 else
@@ -70,7 +77,6 @@ PACKAGES=(
     mariadb
     php
     php-mysqlnd
-    php-json
     php-xml
     php-mbstring
     php-intl
