@@ -45,9 +45,9 @@ jobs:
           load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          secrets: |
-            id=RHSM_ACTIVATION_KEY,src=/tmp/RHSM_ACTIVATION_KEY
-            id=RHSM_ORG_ID,src=/tmp/RHSM_ORG_ID
+          secret-files: |
+            RHSM_ACTIVATION_KEY=/tmp/RHSM_ACTIVATION_KEY
+            RHSM_ORG_ID=/tmp/RHSM_ORG_ID
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
