@@ -16,7 +16,6 @@ RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
       mariadb \
       php \
       php-mysqlnd \
-      php-json \
       php-xml \
       php-mbstring \
       php-intl \
