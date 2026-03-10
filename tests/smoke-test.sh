@@ -47,9 +47,22 @@ echo "=== Functional Tests ==="
 TEST_PHP="/var/www/html/test.php"
 echo '<?php phpinfo(); ?>' > "$TEST_PHP"
 
+# Debug: show httpd config, php-fpm socket, and test file
+echo "--- Debug: PHP test diagnostics ---"
+ls -la "$TEST_PHP" 2>&1 || true
+echo "php-fpm listen config:"
+grep -r "^listen" /etc/php-fpm.d/ 2>/dev/null || true
+echo "httpd php proxy config:"
+cat /etc/httpd/conf.d/php.conf 2>/dev/null || echo "NO php.conf found"
+echo "httpd listening ports:"
+ss -tlnp 2>/dev/null | grep httpd || true
+echo "php-fpm socket:"
+ls -la /run/php-fpm/ 2>/dev/null || true
+echo "--- End debug ---"
+
 RESPONSE=""
 for i in $(seq 1 10); do
-    RESPONSE=$(php -r "echo @file_get_contents('http://localhost/test.php') ?: '';" 2>/dev/null || true)
+    RESPONSE=$(php -r "echo @file_get_contents('http://localhost/test.php') ?: '';" 2>&1 || true)
     if echo "$RESPONSE" | grep -q "PHP Version"; then
         break
     fi
@@ -58,6 +71,8 @@ done
 if echo "$RESPONSE" | grep -q "PHP Version"; then
     pass "PHP via Apache returns phpinfo"
 else
+    echo "  DEBUG: response length=${#RESPONSE}, first 200 chars:"
+    echo "  ${RESPONSE:0:200}"
     fail "PHP via Apache did not return phpinfo"
 fi
 
