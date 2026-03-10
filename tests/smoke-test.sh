@@ -34,6 +34,12 @@ else
     fail "mariadb is not active"
 fi
 
+if systemctl is-active php-fpm >/dev/null 2>&1; then
+    pass "php-fpm is active"
+else
+    fail "php-fpm is not active"
+fi
+
 # ---------- Functional Tests ----------
 echo "=== Functional Tests ==="
 

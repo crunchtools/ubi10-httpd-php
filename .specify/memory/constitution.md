@@ -36,7 +36,7 @@ Uses `--mount=type=secret` for subscription-manager registration to access RHEL 
 - Required LABELs: `maintainer`, `description`
 - `dnf install -y` followed by `dnf clean all`
 - `subscription-manager unregister` after package installation
-- systemd services enabled: httpd, mariadb
+- systemd services enabled: httpd, mariadb, php-fpm
 - systemd services masked: systemd-remount-fs, systemd-update-done, systemd-udev-trigger
 - `STOPSIGNAL SIGRTMIN+3` for proper systemd shutdown
 - `ENTRYPOINT ["/sbin/init"]`
