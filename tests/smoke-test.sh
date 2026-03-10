@@ -49,7 +49,7 @@ echo '<?php phpinfo(); ?>' > "$TEST_PHP"
 
 RESPONSE=""
 for i in $(seq 1 10); do
-    RESPONSE=$(curl -sf http://localhost/test.php 2>/dev/null || true)
+    RESPONSE=$(php -r "echo @file_get_contents('http://localhost/test.php') ?: '';" 2>/dev/null || true)
     if echo "$RESPONSE" | grep -q "PHP Version"; then
         break
     fi
