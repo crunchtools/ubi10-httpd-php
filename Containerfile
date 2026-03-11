@@ -1,19 +1,10 @@
-FROM registry.access.redhat.com/ubi10/ubi-init:latest
+FROM quay.io/crunchtools/ubi10-httpd:latest
 
 LABEL maintainer="fatherlinux <scott.mccarty@crunchtools.com>"
-LABEL description="UBI 10 base image with Apache httpd, MariaDB, and PHP 8.3 for WordPress hosting"
+LABEL description="UBI 10 PHP 8.3 runtime layer — inherits Apache httpd from ubi10-httpd"
 
-# Register with RHSM, install packages, unregister — single layer so secrets
-# are never cached in intermediate layers
-RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
-    --mount=type=secret,id=RHSM_ORG_ID \
-    subscription-manager register \
-      --activationkey="$(cat /run/secrets/RHSM_ACTIVATION_KEY)" \
-      --org="$(cat /run/secrets/RHSM_ORG_ID)" \
-    && dnf install -y \
-      httpd \
-      mariadb-server \
-      mariadb \
+# All PHP packages available in UBI repos — no RHSM needed
+RUN dnf install -y \
       php \
       php-mysqlnd \
       php-xml \
@@ -22,23 +13,7 @@ RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
       php-gd \
       php-opcache \
       php-pecl-apcu \
-      cronie \
-      procps-ng \
-      diffutils \
-      iputils \
-      bind-utils \
-      net-tools \
-      less \
-    && dnf clean all \
-    && subscription-manager unregister
+    && dnf clean all
 
-# Enable services
-RUN systemctl enable httpd mariadb php-fpm
-
-# Disable unnecessary systemd services for container
-RUN systemctl mask systemd-remount-fs.service \
-    systemd-update-done.service \
-    systemd-udev-trigger.service
-
-STOPSIGNAL SIGRTMIN+3
-ENTRYPOINT ["/sbin/init"]
+# Enable php-fpm (httpd inherited and already enabled)
+RUN systemctl enable php-fpm

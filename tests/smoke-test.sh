@@ -28,16 +28,20 @@ else
     fail "httpd is not active"
 fi
 
-if systemctl is-active mariadb >/dev/null 2>&1; then
-    pass "mariadb is active"
-else
-    fail "mariadb is not active"
-fi
-
 if systemctl is-active php-fpm >/dev/null 2>&1; then
     pass "php-fpm is active"
 else
     fail "php-fpm is not active"
+fi
+
+# ---------- Negative Assertion ----------
+echo "=== Negative Assertions ==="
+
+# mariadb-server must NOT be installed — databases belong in leaf images
+if rpm -q mariadb-server >/dev/null 2>&1; then
+    fail "mariadb-server is installed (should be in leaf images only)"
+else
+    pass "mariadb-server NOT installed (correct)"
 fi
 
 # ---------- Functional Tests ----------
@@ -79,32 +83,24 @@ done
 # ---------- Package Integrity ----------
 echo "=== Package Integrity ==="
 
-PACKAGES=(
-    httpd
-    mariadb-server
-    mariadb
-    php
-    php-mysqlnd
-    php-xml
-    php-mbstring
-    php-intl
-    php-gd
-    php-opcache
-    php-pecl-apcu
-    cronie
-    procps-ng
-    diffutils
-    iputils
-    bind-utils
-    net-tools
-    less
-)
-
-for pkg in "${PACKAGES[@]}"; do
+PHP_PACKAGES=(php php-mysqlnd php-xml php-mbstring php-intl php-gd php-opcache php-pecl-apcu)
+for pkg in "${PHP_PACKAGES[@]}"; do
     if rpm -q "$pkg" >/dev/null 2>&1; then
         pass "package: $pkg"
     else
         fail "package missing: $pkg"
+    fi
+done
+
+# ---------- Inherited (ubi10-httpd + ubi10-core) ----------
+echo "=== Inherited ==="
+
+INHERITED_PACKAGES=(httpd iputils bind-utils net-tools less cronie procps-ng diffutils)
+for pkg in "${INHERITED_PACKAGES[@]}"; do
+    if rpm -q "$pkg" >/dev/null 2>&1; then
+        pass "inherited package: $pkg"
+    else
+        fail "inherited package missing: $pkg"
     fi
 done
 

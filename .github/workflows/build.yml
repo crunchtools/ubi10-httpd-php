@@ -3,10 +3,11 @@ name: Build, Test, and Push Container Image
 on:
   push:
     branches: [main, master]
+  repository_dispatch:
+    types: [parent-image-updated]
   workflow_dispatch:
   schedule:
-    # Rebuild weekly to pick up base image updates
-    - cron: '0 6 * * 1'
+    - cron: '30 4 * * 1'
 
 env:
   REGISTRY: quay.io
@@ -31,11 +32,6 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix=
 
-      - name: Create RHSM secret files
-        run: |
-          echo "${{ secrets.RHSM_ACTIVATION_KEY }}" > /tmp/RHSM_ACTIVATION_KEY
-          echo "${{ secrets.RHSM_ORG_ID }}" > /tmp/RHSM_ORG_ID
-
       - name: Build image
         uses: docker/build-push-action@v5
         with:
@@ -45,9 +41,6 @@ jobs:
           load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          secret-files: |
-            RHSM_ACTIVATION_KEY=/tmp/RHSM_ACTIVATION_KEY
-            RHSM_ORG_ID=/tmp/RHSM_ORG_ID
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -88,12 +81,12 @@ jobs:
             --systemd=always \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-      - name: Wait for systemd services
+      - name: Wait for services
         run: |
           echo "Waiting for services to start..."
           for i in $(seq 1 30); do
             if podman exec test-container systemctl is-active httpd >/dev/null 2>&1 && \
-               podman exec test-container systemctl is-active mariadb >/dev/null 2>&1; then
+               podman exec test-container systemctl is-active php-fpm >/dev/null 2>&1; then
               echo "Services are up after ${i}s"
               break
             fi
@@ -136,10 +129,18 @@ jobs:
       - name: Push image
         run: |
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          # Push SHA tag if available
           SHA_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$(echo ${{ github.sha }} | cut -c1-7)"
           docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest "$SHA_TAG" || true
           docker push "$SHA_TAG" || true
+
+      - name: Trigger downstream rebuilds
+        env:
+          GH_TOKEN: ${{ secrets.CRUNCHTOOLS_DISPATCH_TOKEN }}
+        run: |
+          for repo in ubi10-httpd-php-mariadb ubi10-httpd-php-postgres; do
+            gh api repos/crunchtools/$repo/dispatches \
+              -f event_type=parent-image-updated || true
+          done
 
   validate-constitution:
     name: Constitution Validation
