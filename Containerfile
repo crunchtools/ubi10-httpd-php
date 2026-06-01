@@ -17,3 +17,10 @@ RUN dnf install -y \
 
 # Enable php-fpm (httpd inherited and already enabled)
 RUN systemctl enable php-fpm
+
+# CrunchTools: bound the php-fpm worker pool to fit the container memory limit.
+# Prevents the OOM that took crunchtools.com down on 2026-05-27 (stock pm.max_children=50).
+COPY config/zz-crunchtools-tuning.conf /etc/php-fpm.d/zz-crunchtools-tuning.conf
+
+# CrunchTools: self-heal php-fpm on failure via systemd drop-in.
+COPY config/php-fpm-restart.conf /etc/systemd/system/php-fpm.service.d/restart.conf
