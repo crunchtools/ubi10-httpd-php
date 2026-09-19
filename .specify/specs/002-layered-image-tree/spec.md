@@ -7,6 +7,14 @@
 > **Date:** 2026-03-10
 > **Closes:** [#2](https://github.com/crunchtools/ubi10-httpd-php/issues/2)
 
+> **Superseded in part (2026-09-19, RT #1478):** every reference below to
+> `zabbix` / `crunchtools/zabbix` and to Zabbix trapper items is obsolete.
+> Zabbix was decommissioned in RT #1459 and replaced by Nagios, so that repo is
+> no longer a member of the cascade and the watchdog no longer pushes trapper
+> items — it writes `factory-status.json`, which Nagios reads. The text is left
+> as written because this is the record of what was designed at the time, not a
+> description of the current tree.
+
 ## Overview
 
 Re-architect the CrunchTools container image ecosystem from flat, monolithic images into a layered tree. Each layer provides exactly one concern (troubleshooting tools, web server, language runtime, database) and is tested independently. Database servers are pushed to leaf images, creating a clean RHSM boundary: only leaf images with `mariadb-server` or `postgresql-server` need Red Hat subscription access. Every other layer builds from UBI repos alone.
