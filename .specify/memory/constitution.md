@@ -1,65 +1,62 @@
 # ubi10-httpd-php Constitution
 
-> **Version:** 2.0.1
+> **Version:** 2.1.0
 > **Ratified:** 2026-03-10
+> **Amended:** 2026-10-02
 > **Status:** Active
-> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.17.0
+> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.18.0
 > **Profile:** Container Image
 
-UBI 10 PHP 8.3 runtime layer. Inherits Apache httpd from ubi10-httpd and troubleshooting tools from ubi10-core. Does NOT include any database server — use ubi10-httpd-php-mariadb or ubi10-httpd-php-postgres leaf images for database workloads.
+This file holds what is specific to ubi10-httpd-php. The fleet rules and the Container
+Image profile (license, versioning, LABELs, the RHSM secret-mount pattern,
+systemd conventions, registry, testing and quality gates) apply at the
+inherited version and are checked against this repo's files by
+`constitution.yml`. They are not restated here.
 
----
+## Purpose
 
-## License
+UBI 10 PHP 8.3 runtime layer on ubi10-httpd. Published as
+`quay.io/crunchtools/ubi10-httpd-php`.
 
-AGPL-3.0-or-later
+## Parent Image
 
-## Versioning
+`quay.io/crunchtools/ubi10-httpd:latest`. It inherits httpd (enabled) and
+everything ubi10-core provides. All PHP packages are in the UBI repos; no
+RHSM registration.
 
-Follow Semantic Versioning 2.0.0. MAJOR/MINOR/PATCH.
+## Packages and Services
 
-## Base Image
+- **Packages:** php, php-mysqlnd, php-xml, php-mbstring, php-intl, php-gd,
+  php-opcache, php-pecl-apcu.
+- **Enabled:** php-fpm, with a `Restart=on-failure` drop-in
+  (`config/php-fpm-restart.conf`).
 
-`quay.io/crunchtools/ubi10-httpd:latest` — inherits httpd (enabled), troubleshooting tools (iputils, bind-utils, net-tools, less), cron, procps-ng, diffutils, and systemd hardening.
+## php-fpm Pool Bounds
 
-## Registry
+`config/zz-crunchtools-tuning.conf` re-opens the `[www]` pool with
+`pm = ondemand`, `pm.max_children = 10`, `pm.process_idle_timeout = 10s` and
+`pm.max_requests = 500`. Every PHP image in the tree inherits these bounds;
+they exist because of the 2026-05-27 crunchtools.com OOM outage.
 
-Published to `quay.io/crunchtools/ubi10-httpd-php`.
+## No Database Server
 
-## RHSM Registration
-
-Not required. All PHP packages are available in UBI repos.
-
-## Containerfile Conventions
-
-- Uses `Containerfile` (not Dockerfile)
-- Required LABELs: `maintainer`, `description`
-- `dnf install -y` followed by `dnf clean all`
-- No RHSM registration needed
-- systemd services enabled: php-fpm
-- Inherits from parent chain: httpd (enabled), systemd-remount-fs/systemd-update-done/systemd-udev-trigger (masked)
-- Inherits `STOPSIGNAL SIGRTMIN+3` and `ENTRYPOINT ["/sbin/init"]` from ubi10-core
-
-## Packages Installed
-
-php, php-mysqlnd, php-xml, php-mbstring, php-intl, php-gd, php-opcache, php-pecl-apcu
-
-Inherited from ubi10-httpd: httpd
-Inherited from ubi10-core: iputils, bind-utils, net-tools, less, cronie, procps-ng, diffutils
-
-## Testing
-
-- **Build test**: CI builds the image on every push to main/master
-- **Smoke tests**: Service health (httpd, php-fpm), PHP functional (phpinfo via Apache), PHP modules (mysqlnd, mbstring, xml, intl, gd), negative assertion (mariadb-server NOT installed), package integrity, inherited package verification
-- **Security scan**: Recommended (not yet implemented)
-
-## Quality Gates
-
-1. Build — CI builds the Containerfile successfully
-2. Test — smoke tests pass (services up, PHP works, no MariaDB, packages present)
-3. Push — image published only after tests pass
-4. Weekly rebuild — cron job picks up base image updates every Monday 4:30 AM UTC
+This layer carries no database server. Database workloads use the
+ubi10-httpd-php-mariadb or ubi10-httpd-php-postgres leaf images. The smoke
+test asserts `mariadb-server` is NOT installed, alongside httpd and php-fpm
+active, phpinfo served through Apache, and the mysqlnd, mbstring, xml, intl
+and gd modules loaded.
 
 ## Downstream Images
 
-ubi10-httpd-php-mariadb, ubi10-httpd-php-postgres (direct children). Changes cascade via repository_dispatch.
+Build dispatches `parent-image-updated` to ubi10-httpd-php-mariadb,
+ubi10-httpd-php-postgres and spanish.
+
+## History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0.0 | 2026-03-03 | Initial Container Image profile constitution |
+| 1.1.0 | 2026-03-10 | Smoke tests, php-fpm enabled |
+| 2.0.0 | 2026-03-10 | Rebased onto ubi10-httpd; MariaDB and RHSM removed |
+| 2.0.1 | 2026-09-25 | Gatehouse review, triage and pre-commit gates |
+| 2.1.0 | 2026-10-02 | Manifest under constitution v1.18.0: profile restatement removed, image specifics kept |
