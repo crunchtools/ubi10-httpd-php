@@ -7,6 +7,10 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Changed
+- Promote signs the image with the fleet cosign key (`sign: true`), because
+  bootc hosts are moving to trust only signed `quay.io/crunchtools` images
+  (crunchtools/rhel10-bootc-server#47). Needs the repo's `cosign-signing`
+  environment to hold `COSIGN_PRIVATE_KEY` and `COSIGN_PASSWORD`.
 - Constitution is now a v1.18.0 manifest: fleet and profile rules apply by
   reference, and only this repo's specifics are kept.
 - Constitution validation is pinned via `constitution.yml`.

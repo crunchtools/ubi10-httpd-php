@@ -32,7 +32,14 @@ jobs:
       contract-test: tests/gate.sh
       cascade: true
       downstream: ubi10-httpd-php-mariadb ubi10-httpd-php-postgres spanish
+      # Hosts refuse an unsigned quay.io/crunchtools image
+      # (crunchtools/rhel10-bootc-server#47). Promote signs the gated digest
+      # before any tag moves, with the key from this repo's cosign-signing
+      # environment (default branch and v* only); without it promote refuses.
+      sign: true
     secrets:
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       CRUNCHTOOLS_CI_APP_KEY: ${{ secrets.CRUNCHTOOLS_CI_APP_KEY }}
