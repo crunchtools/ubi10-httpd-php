@@ -6,7 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-25
+
 ### Changed
+- CI is the fleet ci.yml (sdlc 0.15): one image build per release, signed with
+  the fleet key and annotated with this repo, so children can verify their parent.
 - Promote signs the image with the fleet cosign key (`sign: true`), because
   bootc hosts are moving to trust only signed `quay.io/crunchtools` images
   (crunchtools/rhel10-bootc-server#47). Needs the repo's `cosign-signing`
